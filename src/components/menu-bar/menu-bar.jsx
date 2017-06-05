@@ -11,15 +11,15 @@ const OpenInScratch = require('../../containers/open-in-scratch.jsx');
 const Save = require('../../containers/save.jsx');
 const Load = require('../../containers/load.jsx');
 
-const homepageHref = "http://microworlds.media.mit.edu:8333/microworlds/new";
+const homepageHref = 'http://microworlds.media.mit.edu:8333/microworlds/new';
 
 const MenuBar = function MenuBar (props) {
     const {
+        blocks,
         editorType,
         updateToDefaultToolbox,
-        returnToMicroworld,
-        blocks,
         vm,
+        returnToMicroworld,
         ...componentProps
     } = props;
     return (
@@ -28,29 +28,35 @@ const MenuBar = function MenuBar (props) {
                 [styles.menuBar]: true
             })}
         >
-            <a className={classNames(styles.logoWrapper, styles.menuItem)} href={homepageHref}>
+            <a
+                className={classNames(styles.logoWrapper, styles.menuItem)}
+                href={homepageHref}
+            >
                 <img
                     className={classNames(styles.scratchLogo)}
                     src={scratchLogo}
                 />
             </a>
-            <Save className={styles.menuItem} 
-                  vm={vm}
-                  blocks={blocks}
-                  editorType={editorType}>
+            <Save
+                blocks={blocks}
+                className={styles.menuItem}
+                editorType={editorType}
+                vm={vm}
+            >
                 Save
             </Save>
-	    
-	    <SaveButton className={styles.menuItem} />
+            <Load className={styles.menuItem} />
+
+            <SaveButton className={styles.menuItem} />
             <LoadButton className={styles.menuItem} />
-            
-	    <OpenInScratch className={styles.menuItem}
-                           vm={vm}
-                           blocks={blocks}
-                           editorType={editorType}
-                           updateToDefaultToolbox={updateToDefaultToolbox}
-                           returnToMicroworld={returnToMicroworld}>
-            </OpenInScratch>
+            <OpenInScratch
+                blocks={blocks}
+                className={styles.menuItem}
+                editorType={editorType}
+                returnToMicroworld={returnToMicroworld}
+                updateToDefaultToolbox={updateToDefaultToolbox}
+                vm={vm}
+            />
         </Box>
     );
 };
