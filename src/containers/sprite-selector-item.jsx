@@ -1,5 +1,8 @@
 const bindAll = require('lodash.bindall');
+const PropTypes = require('prop-types');
 const React = require('react');
+
+const {connect} = require('react-redux');
 
 const SpriteSelectorItemComponent = require('../components/sprite-selector-item/sprite-selector-item.jsx');
 
@@ -23,9 +26,12 @@ class SpriteSelectorItem extends React.Component {
     }
     render () {
         const {
-            id, // eslint-disable-line no-unused-vars
-            onClick, // eslint-disable-line no-unused-vars
-            onDeleteButtonClick, // eslint-disable-line no-unused-vars
+            /* eslint-disable no-unused-vars */
+            assetId,
+            id,
+            onClick,
+            onDeleteButtonClick,
+            /* eslint-enable no-unused-vars */
             ...props
         } = this.props;
         return (
@@ -39,12 +45,19 @@ class SpriteSelectorItem extends React.Component {
 }
 
 SpriteSelectorItem.propTypes = {
-    costumeURL: React.PropTypes.string,
-    id: React.PropTypes.string,
-    name: React.PropTypes.string,
-    onClick: React.PropTypes.func,
-    onDeleteButtonClick: React.PropTypes.func,
-    selected: React.PropTypes.bool
+    assetId: PropTypes.string,
+    costumeURL: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    onClick: PropTypes.func,
+    onDeleteButtonClick: PropTypes.func,
+    selected: PropTypes.bool
 };
 
-module.exports = SpriteSelectorItem;
+const mapStateToProps = (state, {assetId, costumeURL}) => ({
+    costumeURL: costumeURL || (assetId && state.vm.runtime.storage.get(assetId).encodeDataURI())
+});
+
+module.exports = connect(
+    mapStateToProps
+)(SpriteSelectorItem);

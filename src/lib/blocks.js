@@ -9,7 +9,9 @@ module.exports = function (vm) {
                 {
                     type: 'field_dropdown',
                     name: name,
-                    options: start.concat(menuOptionsFn())
+                    options: function () {
+                        return start.concat(menuOptionsFn());
+                    }
                 }
             ],
             inputsInline: true,
@@ -144,6 +146,11 @@ module.exports = function (vm) {
             ['myself', '_myself_']
         ]);
         this.jsonInit(json);
+    };
+
+    ScratchBlocks.VerticalFlyout.getCheckboxState = function (blockId) {
+        const monitoredBlock = vm.runtime.monitorBlocks._blocks[blockId];
+        return monitoredBlock ? monitoredBlock.isMonitored : false;
     };
 
     return ScratchBlocks;

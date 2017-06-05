@@ -1,4 +1,5 @@
 const classNames = require('classnames');
+const PropTypes = require('prop-types');
 const React = require('react');
 
 const Box = require('../box/box.jsx');
@@ -8,16 +9,14 @@ const xIcon = require('./icon--x.svg');
 const yIcon = require('./icon--y.svg');
 const showIcon = require('./icon--show.svg');
 const hideIcon = require('./icon--hide.svg');
-const draggableIcon = require('./icon--draggable-on.svg');
-const notDraggableIcon = require('./icon--draggable-off.svg');
 
 const ROTATION_STYLES = ['left-right', 'don\'t rotate', 'all around'];
 
 class SpriteInfo extends React.Component {
     shouldComponentUpdate (nextProps) {
         return (
+            this.props.direction !== nextProps.direction ||
             this.props.disabled !== nextProps.disabled ||
-            this.props.draggable !== nextProps.draggable ||
             this.props.name !== nextProps.name ||
             this.props.rotationStyle !== nextProps.rotationStyle ||
             this.props.visible !== nextProps.visible ||
@@ -34,7 +33,7 @@ class SpriteInfo extends React.Component {
                     <div className={styles.group}>
                         <span className={styles.inputLabel}>Sprite</span>
                         <input
-                            className={classNames(styles.inputForm, styles.inputFormSpriteName)}
+                            className={classNames(styles.inputForm, styles.spriteName)}
                             disabled={this.props.disabled}
                             placeholder="Name"
                             tabIndex="1"
@@ -55,7 +54,7 @@ class SpriteInfo extends React.Component {
                         </div>
                         <span className={styles.inputLabel}>x</span>
                         <input
-                            className={classNames(styles.inputForm, styles.inputFormX)}
+                            className={classNames(styles.inputForm, styles.x)}
                             disabled={this.props.disabled}
                             placeholder="x"
                             tabIndex="2"
@@ -76,7 +75,7 @@ class SpriteInfo extends React.Component {
                         </div>
                         <span className={styles.inputLabel}>y</span>
                         <input
-                            className={classNames(styles.inputForm, styles.inputFormY)}
+                            className={classNames(styles.inputForm, styles.y)}
                             disabled={this.props.disabled}
                             placeholder="y"
                             tabIndex="3"
@@ -94,25 +93,34 @@ class SpriteInfo extends React.Component {
 }
 
 SpriteInfo.propTypes = {
-    disabled: React.PropTypes.bool,
-    draggable: React.PropTypes.bool,
-    name: React.PropTypes.string,
-    onBlurName: React.PropTypes.func,
-    onBlurX: React.PropTypes.func,
-    onBlurY: React.PropTypes.func,
-    onChangeName: React.PropTypes.func,
-    onChangeRotationStyle: React.PropTypes.func,
-    onChangeX: React.PropTypes.func,
-    onChangeY: React.PropTypes.func,
-    onClickDraggable: React.PropTypes.func,
-    onClickNotDraggable: React.PropTypes.func,
-    onClickNotVisible: React.PropTypes.func,
-    onClickVisible: React.PropTypes.func,
-    onKeyPress: React.PropTypes.func,
-    rotationStyle: React.PropTypes.oneOf(ROTATION_STYLES),
-    visible: React.PropTypes.bool,
-    x: React.PropTypes.string,
-    y: React.PropTypes.string
+    direction: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
+    disabled: PropTypes.bool,
+    name: PropTypes.string,
+    onBlurDirection: PropTypes.func,
+    onBlurName: PropTypes.func,
+    onBlurX: PropTypes.func,
+    onBlurY: PropTypes.func,
+    onChangeDirection: PropTypes.func,
+    onChangeName: PropTypes.func,
+    onChangeRotationStyle: PropTypes.func,
+    onChangeX: PropTypes.func,
+    onChangeY: PropTypes.func,
+    onClickNotVisible: PropTypes.func,
+    onClickVisible: PropTypes.func,
+    onKeyPress: PropTypes.func,
+    rotationStyle: PropTypes.oneOf(ROTATION_STYLES),
+    visible: PropTypes.bool,
+    x: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ]),
+    y: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ])
 };
 
 module.exports = SpriteInfo;

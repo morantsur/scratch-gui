@@ -8,6 +8,7 @@ const {
     openSpriteLibrary,
     closeBackdropLibrary,
     closeCostumeLibrary,
+    closeSoundLibrary,
     closeSpriteLibrary
 } = require('../reducers/modals');
 
@@ -17,7 +18,7 @@ class TargetPane extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleChangeSpriteDraggability',
+            'handleChangeSpriteDirection',
             'handleChangeSpriteName',
             'handleChangeSpriteRotationStyle',
             'handleChangeSpriteVisibility',
@@ -27,8 +28,8 @@ class TargetPane extends React.Component {
             'handleSelectSprite'
         ]);
     }
-    handleChangeSpriteDraggability (draggable) {
-        this.props.vm.postSpriteInfo({draggable});
+    handleChangeSpriteDirection (direction) {
+        this.props.vm.postSpriteInfo({direction});
     }
     handleChangeSpriteName (name) {
         this.props.vm.renameSprite(this.props.editingTarget, name);
@@ -55,7 +56,7 @@ class TargetPane extends React.Component {
         return (
             <TargetPaneComponent
                 {...this.props}
-                onChangeSpriteDraggability={this.handleChangeSpriteDraggability}
+                onChangeSpriteDirection={this.handleChangeSpriteDirection}
                 onChangeSpriteName={this.handleChangeSpriteName}
                 onChangeSpriteRotationStyle={this.handleChangeSpriteRotationStyle}
                 onChangeSpriteVisibility={this.handleChangeSpriteVisibility}
@@ -80,13 +81,15 @@ TargetPane.propTypes = {
 const mapStateToProps = state => ({
     editingTarget: state.targets.editingTarget,
     sprites: Object.keys(state.targets.sprites).reduce((sprites, k) => {
-        let {x, y, ...sprite} = state.targets.sprites[k];
+        let {direction, x, y, ...sprite} = state.targets.sprites[k];
+        if (typeof direction !== 'undefined') direction = Math.round(direction);
         if (typeof x !== 'undefined') x = Math.round(x);
         if (typeof y !== 'undefined') y = Math.round(y);
-        sprites[k] = {...sprite, x, y};
+        sprites[k] = {...sprite, direction, x, y};
         return sprites;
     }, {}),
     stage: state.targets.stage,
+    soundLibraryVisible: state.modals.soundLibrary,
     spriteLibraryVisible: state.modals.spriteLibrary,
     costumeLibraryVisible: state.modals.costumeLibrary,
     backdropLibraryVisible: state.modals.backdropLibrary
@@ -105,6 +108,9 @@ const mapDispatchToProps = dispatch => ({
     },
     onRequestCloseCostumeLibrary: () => {
         dispatch(closeCostumeLibrary());
+    },
+    onRequestCloseSoundLibrary: () => {
+        dispatch(closeSoundLibrary());
     },
     onRequestCloseSpriteLibrary: () => {
         dispatch(closeSpriteLibrary());

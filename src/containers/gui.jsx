@@ -1,5 +1,7 @@
+const PropTypes = require('prop-types');
 const React = require('react');
 const VM = require('scratch-vm');
+const bindAll = require('lodash.bindall');
 
 const vmListenerHOC = require('../lib/vm-listener-hoc.jsx');
 
@@ -7,6 +9,13 @@ const GUIComponent = require('../components/gui/gui.jsx');
 const DefaultBlocks = require('../lib/libraries/blocks.json');
 
 class GUI extends React.Component {
+    constructor (props) {
+        super(props);
+        bindAll(this, [
+            'handleTabSelect'
+        ]);
+        this.state = {tabIndex: 0};
+    }
     componentDidMount () {
         this.props.vm.loadProject(this.props.projectData);
         this.props.vm.setCompatibilityMode(true);
@@ -45,6 +54,9 @@ class GUI extends React.Component {
         }
         return null;
     }
+    handleTabSelect (tabIndex) {
+        this.setState({tabIndex});
+    }
     render () {
         const {
             projectData, // eslint-disable-line no-unused-vars
@@ -55,8 +67,10 @@ class GUI extends React.Component {
         } = this.props;
         return (
             <GUIComponent
+                tabIndex={this.state.tabIndex}
                 vm={vm}
-                editorType={this.props.editorType}
+                onTabSelect={this.handleTabSelect}
+		editorType={this.props.editorType}
                 blocks={this.chooseBlocks()} //Is needed?
                 {...componentProps}
             />
@@ -66,7 +80,7 @@ class GUI extends React.Component {
 
 GUI.propTypes = {
     ...GUIComponent.propTypes,
-    projectData: React.PropTypes.string,
+    projectData: PropTypes.string,
     editorType: React.PropTypes.number,
     vm: React.PropTypes.instanceOf(VM),
     blocks: React.PropTypes.string

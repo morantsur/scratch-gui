@@ -1,4 +1,5 @@
 const classNames = require('classnames');
+const PropTypes = require('prop-types');
 const React = require('react');
 
 const Box = require('../box/box.jsx');
@@ -32,7 +33,7 @@ const StageSelector = props => {
                     {url ? (
                         <CostumeCanvas
                             className={styles.costumeCanvas}
-                            height={44}
+                            height={42}
                             url={url}
                             width={56}
                         />
@@ -40,16 +41,16 @@ const StageSelector = props => {
                     <div className={styles.label}>Backdrops</div>
                     <div className={styles.count}>{backdropCount}</div>
                 </div>
-                
+
             </div>
         </Box>
     );
 };
 
 StageSelector.propTypes = {
-    backdropCount: React.PropTypes.number,
-    onClick: React.PropTypes.func,
-    selected: React.PropTypes.bool,
-    url: React.PropTypes.string
+    backdropCount: PropTypes.number.isRequired,
+    onClick: PropTypes.func,
+    selected: PropTypes.bool.isRequired,
+    url: PropTypes.string
 };
 module.exports = StageSelector;

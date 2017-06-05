@@ -1,9 +1,11 @@
 const bindAll = require('lodash.bindall');
+const debounce = require('lodash.debounce');
 const defaultsDeep = require('lodash.defaultsdeep');
+const PropTypes = require('prop-types');
 const React = require('react');
 const VMScratchBlocks = require('../lib/blocks');
 const VM = require('scratch-vm');
-
+const Prompt = require('./prompt.jsx');
 const BlocksComponent = require('../components/blocks/blocks.jsx');
 
 const addFunctionListener = (object, property, callback) => {
@@ -22,17 +24,26 @@ class Blocks extends React.Component {
         bindAll(this, [
             'attachVM',
             'detachVM',
+            'handlePromptStart',
+            'handlePromptCallback',
+            'handlePromptClose',
             'onScriptGlowOn',
             'onScriptGlowOff',
             'onBlockGlowOn',
             'onBlockGlowOff',
+            'onTargetsUpdate',
             'onVisualReport',
             'onWorkspaceUpdate',
             'onWorkspaceMetricsChange',
             'setBlocks',
             'updateBlocks'
         ]);
-        this.state = {workspaceMetrics: {}};
+        this.ScratchBlocks.prompt = this.handlePromptStart;
+        this.state = {
+            workspaceMetrics: {},
+            prompt: null
+        };
+        this.onTargetsUpdate = debounce(this.onTargetsUpdate, 100);
     }
     componentDidMount () {
         const workspaceConfig = defaultsDeep({}, Blocks.defaultOptions, this.props.options);
@@ -51,8 +62,22 @@ class Blocks extends React.Component {
             if (this.props.options.toolbox !== nextProps.options.toolbox) {
                 return true;
             } else {
-                return false;
+                return this.state.prompt !== nextState.prompt || this.props.isVisible !== nextProps.isVisible;
             }
+        }
+    }
+    componentDidUpdate (prevProps) {
+        if (this.props.isVisible === prevProps.isVisible) {
+            return;
+        }
+
+        // @todo hack to resize blockly manually in case resize happened while hidden
+        if (this.props.isVisible) { // Scripts tab
+            this.workspace.setVisible(true);
+            window.dispatchEvent(new Event('resize'));
+            this.workspace.toolbox_.refreshSelection();
+        } else {
+            this.workspace.setVisible(false);
         }
     }
     componentWillUnmount () {
@@ -61,24 +86,44 @@ class Blocks extends React.Component {
     }
     attachVM () {
         this.workspace.addChangeListener(this.props.vm.blockListener);
-        this.workspace
+        this.flyoutWorkspace = this.workspace
             .getFlyout()
-            .getWorkspace()
-            .addChangeListener(this.props.vm.flyoutBlockListener);
-        this.props.vm.on('SCRIPT_GLOW_ON', this.onScriptGlowOn);
-        this.props.vm.on('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
-        this.props.vm.on('BLOCK_GLOW_ON', this.onBlockGlowOn);
-        this.props.vm.on('BLOCK_GLOW_OFF', this.onBlockGlowOff);
-        this.props.vm.on('VISUAL_REPORT', this.onVisualReport);
-        this.props.vm.on('workspaceUpdate', this.onWorkspaceUpdate);
+            .getWorkspace();
+        this.flyoutWorkspace.addChangeListener(this.props.vm.flyoutBlockListener);
+        this.flyoutWorkspace.addChangeListener(this.props.vm.monitorBlockListener);
+        this.props.vm.addListener('SCRIPT_GLOW_ON', this.onScriptGlowOn);
+        this.props.vm.addListener('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
+        this.props.vm.addListener('BLOCK_GLOW_ON', this.onBlockGlowOn);
+        this.props.vm.addListener('BLOCK_GLOW_OFF', this.onBlockGlowOff);
+        this.props.vm.addListener('VISUAL_REPORT', this.onVisualReport);
+        this.props.vm.addListener('workspaceUpdate', this.onWorkspaceUpdate);
+        this.props.vm.addListener('targetsUpdate', this.onTargetsUpdate);
     }
     detachVM () {
-        this.props.vm.off('SCRIPT_GLOW_ON', this.onScriptGlowOn);
-        this.props.vm.off('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
-        this.props.vm.off('BLOCK_GLOW_ON', this.onBlockGlowOn);
-        this.props.vm.off('BLOCK_GLOW_OFF', this.onBlockGlowOff);
-        this.props.vm.off('VISUAL_REPORT', this.onVisualReport);
-        this.props.vm.off('workspaceUpdate', this.onWorkspaceUpdate);
+        this.props.vm.removeListener('SCRIPT_GLOW_ON', this.onScriptGlowOn);
+        this.props.vm.removeListener('SCRIPT_GLOW_OFF', this.onScriptGlowOff);
+        this.props.vm.removeListener('BLOCK_GLOW_ON', this.onBlockGlowOn);
+        this.props.vm.removeListener('BLOCK_GLOW_OFF', this.onBlockGlowOff);
+        this.props.vm.removeListener('VISUAL_REPORT', this.onVisualReport);
+        this.props.vm.removeListener('workspaceUpdate', this.onWorkspaceUpdate);
+        this.props.vm.removeListener('targetsUpdate', this.onTargetsUpdate);
+    }
+    updateToolboxBlockValue (id, value) {
+        const block = this.workspace
+            .getFlyout()
+            .getWorkspace()
+            .getBlockById(id);
+        if (block) {
+            block.inputList[0].fieldRow[0].setValue(value);
+        }
+    }
+    onTargetsUpdate () {
+        if (this.props.vm.editingTarget) {
+            ['glide', 'move', 'set'].forEach(prefix => {
+                this.updateToolboxBlockValue(`${prefix}x`, this.props.vm.editingTarget.x.toFixed(0));
+                this.updateToolboxBlockValue(`${prefix}y`, this.props.vm.editingTarget.y.toFixed(0));
+            });
+        }
     }
     onWorkspaceMetricsChange () {
         const target = this.props.vm.editingTarget;
@@ -112,7 +157,6 @@ class Blocks extends React.Component {
         if (this.props.vm.editingTarget && !this.state.workspaceMetrics[this.props.vm.editingTarget.id]) {
             this.onWorkspaceMetricsChange();
         }
-
         this.ScratchBlocks.Events.disable();
         this.workspace.clear();
 
@@ -137,10 +181,22 @@ class Blocks extends React.Component {
     setBlocks (blocks) {
         this.blocks = blocks;
     }
+    handlePromptStart (message, defaultValue, callback) {
+        this.setState({prompt: {callback, message, defaultValue}});
+    }
+    handlePromptCallback (data) {
+        this.state.prompt.callback(data);
+        this.props.vm.createVariable(data);
+        this.handlePromptClose();
+    }
+    handlePromptClose () {
+        this.setState({prompt: null});
+    }
     render () {
         const {
             options, // eslint-disable-line no-unused-vars
             vm, // eslint-disable-line no-unused-vars
+            isVisible, // eslint-disable-line no-unused-vars
             ...props
         } = this.props;
 
@@ -151,38 +207,50 @@ class Blocks extends React.Component {
         }
 
         return (
-            <BlocksComponent
-                componentRef={this.setBlocks}
-                {...props}
-            />
+            <div>
+                <BlocksComponent
+                    componentRef={this.setBlocks}
+                    {...props}
+                />
+                {this.state.prompt ? (
+                    <Prompt
+                        label={this.state.prompt.message}
+                        placeholder={this.state.prompt.defaultValue}
+                        title="New Variable" // @todo the only prompt is for new variables
+                        onCancel={this.handlePromptClose}
+                        onOk={this.handlePromptCallback}
+                    />
+                ) : null}
+            </div>
         );
     }
 }
 
 Blocks.propTypes = {
-    options: React.PropTypes.shape({
+    isVisible: PropTypes.bool.isRequired,
+    options: PropTypes.shape({
         editorType: React.PropTypes.number,
         toolbox: React.PropTypes.string,
-        media: React.PropTypes.string,
-        zoom: React.PropTypes.shape({
-            controls: React.PropTypes.boolean,
-            wheel: React.PropTypes.boolean,
-            startScale: React.PropTypes.number
+        media: PropTypes.string,
+        zoom: PropTypes.shape({
+            controls: PropTypes.bool,
+            wheel: PropTypes.bool,
+            startScale: PropTypes.number
         }),
-        colours: React.PropTypes.shape({
-            workspace: React.PropTypes.string,
-            flyout: React.PropTypes.string,
-            toolbox: React.PropTypes.string,
-            toolboxSelected: React.PropTypes.string,
-            scrollbar: React.PropTypes.string,
-            scrollbarHover: React.PropTypes.string,
-            insertionMarker: React.PropTypes.string,
-            insertionMarkerOpacity: React.PropTypes.number,
-            fieldShadow: React.PropTypes.string,
-            dragShadowOpacity: React.PropTypes.number
+        colours: PropTypes.shape({
+            workspace: PropTypes.string,
+            flyout: PropTypes.string,
+            toolbox: PropTypes.string,
+            toolboxSelected: PropTypes.string,
+            scrollbar: PropTypes.string,
+            scrollbarHover: PropTypes.string,
+            insertionMarker: PropTypes.string,
+            insertionMarkerOpacity: PropTypes.number,
+            fieldShadow: PropTypes.string,
+            dragShadowOpacity: PropTypes.number
         })
     }),
-    vm: React.PropTypes.instanceOf(VM)
+    vm: PropTypes.instanceOf(VM).isRequired
 };
 
 Blocks.defaultOptions = {
@@ -211,8 +279,7 @@ Blocks.defaultOptions = {
 };
 
 Blocks.defaultProps = {
-    options: Blocks.defaultOptions,
-    vm: new VM()
+    options: Blocks.defaultOptions
 };
 
 module.exports = Blocks;

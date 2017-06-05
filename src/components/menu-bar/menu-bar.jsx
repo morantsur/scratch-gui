@@ -2,6 +2,9 @@ const classNames = require('classnames');
 const React = require('react');
 
 const Box = require('../box/box.jsx');
+const LoadButton = require('../../containers/load-button.jsx');
+const SaveButton = require('../../containers/save-button.jsx');
+
 const styles = require('./menu-bar.css');
 const scratchLogo = require('./scratch-logo.svg');
 const OpenInScratch = require('../../containers/open-in-scratch.jsx');
@@ -37,8 +40,11 @@ const MenuBar = function MenuBar (props) {
                   editorType={editorType}>
                 Save
             </Save>
-            <Load className={styles.menuItem}></Load>
-            <OpenInScratch className={styles.menuItem}
+	    
+	    <SaveButton className={styles.menuItem} />
+            <LoadButton className={styles.menuItem} />
+            
+	    <OpenInScratch className={styles.menuItem}
                            vm={vm}
                            blocks={blocks}
                            editorType={editorType}

@@ -1,4 +1,5 @@
 const bindAll = require('lodash.bindall');
+const PropTypes = require('prop-types');
 const React = require('react');
 const ReactDOM = require('react-dom');
 const {Provider} = require('react-redux');
@@ -33,7 +34,7 @@ class App extends React.Component {
 
         this.state = {
             projectId: null,
-            projectData: JSON.stringify(ProjectLoader.DEFAULT_PROJECT_DATA),
+            projectData: this.fetchProjectId().length ? null : JSON.stringify(ProjectLoader.DEFAULT_PROJECT_DATA),
             editorType: this.fetchEditorType(projectId),
             blocks: ProjectLoader.loadBlocksFromFile(projectId)
         };
@@ -150,6 +151,7 @@ class App extends React.Component {
         })
     }
     render () {
+        if (this.state.projectData === null) return null;
         return (
             <GUI
                 basePath={this.props.basePath}
@@ -164,7 +166,7 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-    basePath: React.PropTypes.string
+    basePath: PropTypes.string
 };
 
 const appTarget = document.createElement('div');
