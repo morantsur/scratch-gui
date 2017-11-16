@@ -44,12 +44,18 @@ class GUI extends React.Component {
             vm,
             ...componentProps
         } = this.props;
+
+        // If the project file includes the toolbox setup, extract it and share with children.
+        const parsedProjectDate = this.props.projectData ? JSON.parse(this.props.projectData) : undefined;
+        const projectToolbox = parsedProjectDate ? parsedProjectDate.projectToolbox : undefined;
+
         return (
             <GUIComponent
                 enableExtensions={window.location.search.includes('extensions')}
                 tabIndex={this.state.tabIndex}
                 vm={vm}
                 onTabSelect={this.handleTabSelect}
+                projectToolbox={projectToolbox}
                 {...componentProps}
             >
                 {children}

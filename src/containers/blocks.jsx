@@ -63,6 +63,8 @@ class Blocks extends React.Component {
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
 
+        this.props.projectToolbox && this.props.onToolboxUpdate(this.props.projectToolbox);
+
         // @todo change this when blockly supports UI events
         addFunctionListener(this.workspace, 'translate', this.onWorkspaceMetricsChange);
         addFunctionListener(this.workspace, 'zoom', this.onWorkspaceMetricsChange);
@@ -194,8 +196,8 @@ class Blocks extends React.Component {
         this.ScratchBlocks.defineBlocksWithJsonArray(blocksInfo.map(blockInfo => blockInfo.json));
         const dynamicBlocksXML = this.props.vm.runtime.getBlocksXML();
         const toolboxXML = makeToolboxXML(dynamicBlocksXML);
-        this.props.onExtensionAdded(toolboxXML);
-    }
+        this.props.onToolboxUpdate(toolboxXML);
+    }  
     handleCategorySelected (categoryName) {
         this.workspace.toolbox_.setSelectedCategoryByName(categoryName);
     }
@@ -219,9 +221,10 @@ class Blocks extends React.Component {
             options,
             vm,
             isVisible,
+            projectToolbox,
             onActivateColorPicker,
-            onExtensionAdded,
             onRequestCloseExtensionLibrary,
+            onToolboxUpdate,
             toolboxXML,
             ...props
         } = this.props;
@@ -257,8 +260,8 @@ Blocks.propTypes = {
     extensionLibraryVisible: PropTypes.bool,
     isVisible: PropTypes.bool,
     onActivateColorPicker: PropTypes.func,
-    onExtensionAdded: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
+    onToolboxUpdate: PropTypes.func,
     options: PropTypes.shape({
         media: PropTypes.string,
         zoom: PropTypes.shape({
@@ -280,6 +283,7 @@ Blocks.propTypes = {
         }),
         comments: PropTypes.bool
     }),
+    projectToolbox: PropTypes.string,
     toolboxXML: PropTypes.string,
     vm: PropTypes.instanceOf(VM).isRequired
 };
@@ -322,11 +326,11 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onActivateColorPicker: callback => dispatch(activateColorPicker(callback)),
-    onExtensionAdded: toolboxXML => {
-        dispatch(updateToolbox(toolboxXML));
-    },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());
+    },
+    onToolboxUpdate: toolboxXML => {
+        dispatch(updateToolbox(toolboxXML));
     }
 });
 

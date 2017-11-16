@@ -38,6 +38,7 @@ const GUIComponent = props => {
         vm,
         onExtensionButtonClick,
         onTabSelect,
+        projectToolbox, 
         tabIndex,
         ...componentProps
     } = props;
@@ -88,6 +89,7 @@ const GUIComponent = props => {
                                             media: `${basePath}static/blocks-media/`
                                         }}
                                         vm={vm}
+                                        projectToolbox={projectToolbox}
                                     />
                                 </Box>
                                 <Box className={styles.extensionButtonContainer}>
@@ -141,6 +143,7 @@ GUIComponent.propTypes = {
     enableExtensions: PropTypes.bool,
     onExtensionButtonClick: PropTypes.func,
     onTabSelect: PropTypes.func,
+    projectToolbox: PropTypes.string,
     tabIndex: PropTypes.number,
     vm: PropTypes.instanceOf(VM).isRequired
 };
