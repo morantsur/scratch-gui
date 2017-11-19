@@ -44,11 +44,15 @@ class Blocks extends React.Component {
             'onVisualReport',
             'onWorkspaceUpdate',
             'onWorkspaceMetricsChange',
-            'setBlocks'
+            'setBlocks',
+            'showPreviosToolboxStep',
+            'showNextToolboxStep',
+            'updateToolboxToMatchToolboxStep'
         ]);
         this.ScratchBlocks.prompt = this.handlePromptStart;
         this.state = {
             workspaceMetrics: {},
+            toolboxStage: 0,
             prompt: null
         };
         this.onTargetsUpdate = debounce(this.onTargetsUpdate, 100);
@@ -63,7 +67,7 @@ class Blocks extends React.Component {
         );
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
 
-        this.props.projectToolbox && this.props.onToolboxUpdate(this.props.projectToolbox);
+        this.updateToolboxToMatchToolboxStep();
 
         // @todo change this when blockly supports UI events
         addFunctionListener(this.workspace, 'translate', this.onWorkspaceMetricsChange);
@@ -74,12 +78,17 @@ class Blocks extends React.Component {
     shouldComponentUpdate (nextProps, nextState) {
         return (
             this.state.prompt !== nextState.prompt ||
+            this.state.toolboxStage !== nextState.toolboxStage ||
             this.props.isVisible !== nextProps.isVisible ||
             this.props.toolboxXML !== nextProps.toolboxXML ||
             this.props.extensionLibraryVisible !== nextProps.extensionLibraryVisible
         );
     }
-    componentDidUpdate (prevProps) {
+    componentDidUpdate (prevProps, prevState) {
+        if (prevState.toolboxStage !== this.state.toolboxStage) {
+            this.updateToolboxToMatchToolboxStep();
+        }
+
         if (prevProps.toolboxXML !== this.props.toolboxXML) {
             const selectedCategoryName = this.workspace.toolbox_.getSelectedItem().name_;
             this.workspace.updateToolbox(this.props.toolboxXML);
@@ -136,6 +145,10 @@ class Blocks extends React.Component {
         if (block) {
             block.inputList[0].fieldRow[0].setValue(value);
         }
+    }
+    updateToolboxToMatchToolboxStep() {
+        this.props.projectToolbox && this.props.projectToolbox[this.state.toolboxStage] && 
+            this.props.onToolboxUpdate(this.props.projectToolbox[this.state.toolboxStage]);
     }
     onTargetsUpdate () {
         if (this.props.vm.editingTarget) {
@@ -197,7 +210,21 @@ class Blocks extends React.Component {
         const dynamicBlocksXML = this.props.vm.runtime.getBlocksXML();
         const toolboxXML = makeToolboxXML(dynamicBlocksXML);
         this.props.onToolboxUpdate(toolboxXML);
-    }  
+    }
+    showNextToolboxStep() {
+        this.setState((prevState, props) => {
+            if (prevState.toolboxStage + 1 < this.props.projectToolbox.length) {
+                return ({toolboxStage: prevState.toolboxStage + 1})
+            }
+        })
+    }
+    showPreviosToolboxStep() {
+        this.setState((prevState, props) => {
+            if (prevState.toolboxStage > 0) {
+                return ({toolboxStage: prevState.toolboxStage - 1})
+            }
+        })
+    }
     handleCategorySelected (categoryName) {
         this.workspace.toolbox_.setSelectedCategoryByName(categoryName);
     }
@@ -233,6 +260,8 @@ class Blocks extends React.Component {
             <div>
                 <BlocksComponent
                     componentRef={this.setBlocks}
+                    onShowMoreClicked={this.showNextToolboxStep}
+                    onShowLessClicked={this.showPreviosToolboxStep}
                     {...props}
                 />
                 {this.state.prompt ? (
@@ -283,7 +312,7 @@ Blocks.propTypes = {
         }),
         comments: PropTypes.bool
     }),
-    projectToolbox: PropTypes.string,
+    projectToolbox: PropTypes.arrayOf(PropTypes.string),
     toolboxXML: PropTypes.string,
     vm: PropTypes.instanceOf(VM).isRequired
 };

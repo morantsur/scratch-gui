@@ -82,15 +82,6 @@ const MwGUIComponent = props => {
                                         projectToolbox={projectToolbox}
                                     />
                                 </Box>
-                                <Box className={styles.extensionButtonContainer}>
-                                    <IconButton
-                                        className={classNames(styles.extensionButton, {
-                                            [styles.hidden]: !enableExtensions
-                                        })}
-                                        title={'Show More'}
-                                        onClick={onExtensionButtonClick}
-                                    />
-                                </Box>
                             </TabPanel>
                         </Tabs>
                     </Box>
@@ -127,7 +118,7 @@ MwGUIComponent.propTypes = {
     enableExtensions: PropTypes.bool,
     onExtensionButtonClick: PropTypes.func,
     onTabSelect: PropTypes.func,
-    projectToolbox: PropTypes.string,
+    projectToolbox: PropTypes.arrayOf(PropTypes.string),
     tabIndex: PropTypes.number,
     vm: PropTypes.instanceOf(VM).isRequired
 };
