@@ -23,6 +23,7 @@ const TargetPane = ({
     editingTarget,
     backdropLibraryVisible,
     costumeLibraryVisible,
+    isMw,
     soundLibraryVisible,
     spriteLibraryVisible,
     onChangeSpriteDirection,
@@ -50,6 +51,7 @@ const TargetPane = ({
     >
 
         <SpriteSelectorComponent
+            isMw={isMw}
             selectedId={editingTarget}
             sprites={sprites}
             onChangeSpriteDirection={onChangeSpriteDirection}
@@ -63,7 +65,7 @@ const TargetPane = ({
             onNewSpriteClick={onNewSpriteClick}
             onSelectSprite={onSelectSprite}
         />
-        <div className={styles.stageSelectorWrapper}>
+        {!isMw && <div className={styles.stageSelectorWrapper}>
             {stage.id && <StageSelector
                 assetId={
                     stage.costume &&
@@ -100,7 +102,7 @@ const TargetPane = ({
                     />
                 ) : null}
             </div>
-        </div>
+        </div>}
     </div>
 );
 

@@ -2,7 +2,7 @@ import ScratchStorage from 'scratch-storage';
 
 import defaultProjectAssets from './default-project';
 
-const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
+const PROJECT_SERVER = 'http://0.0.0.0:8000';
 const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu';
 
 /**
@@ -16,9 +16,7 @@ class Storage extends ScratchStorage {
             [this.AssetType.Project],
             projectAsset => {
                 const [projectId, revision] = projectAsset.assetId.split('.');
-                return revision ?
-                    `${PROJECT_SERVER}/internalapi/project/${projectId}/get/${revision}` :
-                    `${PROJECT_SERVER}/internalapi/project/${projectId}/get/`;
+                return `${PROJECT_SERVER}/microworlds/${projectId}.json`;
             }
         );
         this.addWebSource(

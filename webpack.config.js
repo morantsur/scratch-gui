@@ -22,7 +22,8 @@ module.exports = {
         gui: './src/index.jsx',
         blocksonly: './src/examples/blocks-only.jsx',
         compatibilitytesting: './src/examples/compatibility-testing.jsx',
-        player: './src/examples/player.jsx'
+        player: './src/examples/player.jsx',
+        microworld: './src/mw-index.jsx'
     },
     output: {
         path: path.resolve(__dirname, 'build'),
@@ -102,6 +103,12 @@ module.exports = {
             template: 'src/index.ejs',
             filename: 'player.html',
             title: 'Scratch 3.0 GUI: Player Example'
+        }),
+        new HtmlWebpackPlugin({
+            chunks: ['lib', 'microworld'],
+            template: 'src/index.ejs',
+            filename: 'microworld.html',
+            title: 'Scratch 3.0 Microworld GUI'
         }),
         new CopyWebpackPlugin([{
             from: 'node_modules/scratch-blocks/media',

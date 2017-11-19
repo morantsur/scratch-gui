@@ -20,6 +20,7 @@ const addSpriteMessage = (
 
 const SpriteSelectorComponent = function (props) {
     const {
+        isMw,
         onChangeSpriteDirection,
         onChangeSpriteName,
         onChangeSpriteRotationStyle,
@@ -84,17 +85,19 @@ const SpriteSelectorComponent = function (props) {
                     }
                 </Box>
             </Box>
-            <IconButton
+            
+            {!isMw && <IconButton
                 className={styles.addButton}
                 img={spriteIcon}
                 title={addSpriteMessage}
                 onClick={onNewSpriteClick}
-            />
+            />};
         </Box>
     );
 };
 
 SpriteSelectorComponent.propTypes = {
+    isMw: PropTypes.bool,
     onChangeSpriteDirection: PropTypes.func,
     onChangeSpriteName: PropTypes.func,
     onChangeSpriteRotationStyle: PropTypes.func,

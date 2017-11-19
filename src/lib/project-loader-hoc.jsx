@@ -8,7 +8,7 @@ import storage from './storage';
  * @param {React.Component} WrappedComponent component to receive projectData prop
  * @returns {React.Component} component with project loading behavior
  */
-const ProjectLoaderHOC = function (WrappedComponent) {
+const ProjectLoaderHOC = function (WrappedComponent, defaultProjectId = 0) {
     class ProjectLoaderComponent extends React.Component {
         constructor (props) {
             super(props);
@@ -42,7 +42,7 @@ const ProjectLoaderHOC = function (WrappedComponent) {
         updateProject () {
             let projectId = this.fetchProjectId();
             if (projectId !== this.state.projectId) {
-                if (projectId.length < 1) projectId = 0;
+                if (projectId.length < 1) projectId = defaultProjectId;
                 this.setState({projectId: projectId});
             }
         }
