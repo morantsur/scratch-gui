@@ -288,6 +288,7 @@ class Blocks extends React.Component {
 Blocks.propTypes = {
     extensionLibraryVisible: PropTypes.bool,
     isVisible: PropTypes.bool,
+    isMw: PropTypes.bool,
     onActivateColorPicker: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
     onToolboxUpdate: PropTypes.func,

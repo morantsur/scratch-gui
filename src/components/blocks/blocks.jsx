@@ -6,9 +6,13 @@ import styles from './blocks.css';
 
 import IconButton from '../icon-button/icon-button.jsx';
 
+import moreBlocksIcon from './icon--moreblocks.svg';
+import lessBlocksIcon from './icon--lessblocks.svg';
+
 const BlocksComponent = props => {
     const {
         componentRef,
+        isMw,
         onShowMoreClicked,
         onShowLessClicked,
         ...componentProps
@@ -20,18 +24,20 @@ const BlocksComponent = props => {
                 componentRef={componentRef}
                 {...componentProps}
             />
-            <Box className={styles.extensionButtonContainer}>
+            {isMw && <Box className={classNames(styles.blocksButtonContainer, styles.blocks)}>
                 <IconButton
-                    className={classNames(styles.extensionButton)}
+                    className={classNames(styles.blocksButton, styles.blocks)}
+                    img={moreBlocksIcon}
                     title={'Show More'}
                     onClick={onShowMoreClicked}
                 />
                 <IconButton
-                    className={classNames(styles.extensionButton)}
+                    className={classNames(styles.blocksButton, styles.blocks)}
+                    img={lessBlocksIcon}
                     title={'Show Less'}
                     onClick={onShowLessClicked}
                 />
-            </Box>
+            </Box>}
         </Box>
     );
 };

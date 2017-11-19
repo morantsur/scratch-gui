@@ -74,6 +74,7 @@ const MwGUIComponent = props => {
                                 <Box className={styles.blocksWrapper}>
                                     <Blocks
                                         grow={1}
+                                        isMw={isMw}
                                         isVisible={tabIndex === 0} // Blocks tab
                                         options={{
                                             media: `${basePath}static/blocks-media/`

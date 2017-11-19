@@ -29,9 +29,9 @@ $border-style: 1px solid $ui-pane-border;
     box-sizing: content-box;
 }
 
-.extension-button-container {
+.blocks.blocks-button-container {
     width: 3.25rem;
-    height: 6.5rem;
+    height: 8rem;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -42,11 +42,11 @@ $border-style: 1px solid $ui-pane-border;
     box-sizing: content-box; /* To match scratch-block vertical toolbox borders */
 }
 
-.extension-button {
+.blocks.blocks-button {
     font-size: 0.55rem;
     font-weight: bold;
 }
-.extension-button > div {
+.blocks.blocks-button > div {
     margin-top: 0;
 }
 
