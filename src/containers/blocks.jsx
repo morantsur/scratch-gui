@@ -148,7 +148,7 @@ class Blocks extends React.Component {
     }
     updateToolboxToMatchToolboxStep() {
         this.props.projectToolbox && this.props.projectToolbox[this.state.toolboxStage] && 
-            this.props.onToolboxUpdate(this.props.projectToolbox[this.state.toolboxStage]);
+            this.props.updateToolboxState(this.props.projectToolbox[this.state.toolboxStage]);
     }
     onTargetsUpdate () {
         if (this.props.vm.editingTarget) {
@@ -187,6 +187,12 @@ class Blocks extends React.Component {
         this.workspace.reportValue(data.id, data.value);
     }
     onWorkspaceUpdate (data) {
+        // When we change sprites, update the toolbox to have the new sprite's blocks, but not if it's a microworld.
+        // TODO(morant): better solution?
+        if (!this.props.isMw && this.props.vm.editingTarget) {
+            this.props.updateToolboxState(makeToolboxXML(this.props.vm.editingTarget.id));
+        }
+
         if (this.props.vm.editingTarget && !this.state.workspaceMetrics[this.props.vm.editingTarget.id]) {
             this.onWorkspaceMetricsChange();
         }
@@ -194,6 +200,8 @@ class Blocks extends React.Component {
         // Remove and reattach the workspace listener (but allow flyout events)
         this.workspace.removeChangeListener(this.props.vm.blockListener);
         const dom = this.ScratchBlocks.Xml.textToDom(data.xml);
+        // @todo This line rerenders toolbox, and the change in the toolbox XML also rerenders the toolbox.
+        // We should only rerender the toolbox once. See https://github.com/LLK/scratch-gui/issues/901
         this.ScratchBlocks.Xml.clearWorkspaceAndLoadFromXml(dom, this.workspace);
         this.workspace.addChangeListener(this.props.vm.blockListener);
 
@@ -208,8 +216,8 @@ class Blocks extends React.Component {
     handleExtensionAdded (blocksInfo) {
         this.ScratchBlocks.defineBlocksWithJsonArray(blocksInfo.map(blockInfo => blockInfo.json));
         const dynamicBlocksXML = this.props.vm.runtime.getBlocksXML();
-        const toolboxXML = makeToolboxXML(dynamicBlocksXML);
-        this.props.onToolboxUpdate(toolboxXML);
+        const toolboxXML = makeToolboxXML(this.props.vm.editingTarget.id, dynamicBlocksXML);
+        this.props.updateToolboxState(toolboxXML);
     }
     showNextToolboxStep() {
         this.setState((prevState, props) => {
@@ -250,8 +258,8 @@ class Blocks extends React.Component {
             isVisible,
             projectToolbox,
             onActivateColorPicker,
+            updateToolboxState,
             onRequestCloseExtensionLibrary,
-            onToolboxUpdate,
             toolboxXML,
             ...props
         } = this.props;
@@ -291,7 +299,6 @@ Blocks.propTypes = {
     isMw: PropTypes.bool,
     onActivateColorPicker: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
-    onToolboxUpdate: PropTypes.func,
     options: PropTypes.shape({
         media: PropTypes.string,
         zoom: PropTypes.shape({
@@ -315,6 +322,7 @@ Blocks.propTypes = {
     }),
     projectToolbox: PropTypes.arrayOf(PropTypes.string),
     toolboxXML: PropTypes.string,
+    updateToolboxState: PropTypes.func,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 
@@ -359,7 +367,7 @@ const mapDispatchToProps = dispatch => ({
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());
     },
-    onToolboxUpdate: toolboxXML => {
+    updateToolboxState: toolboxXML => {
         dispatch(updateToolbox(toolboxXML));
     }
 });
